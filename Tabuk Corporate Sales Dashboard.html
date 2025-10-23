@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Egypt IMS Performance Review - September 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Corporate Neutral -->
+    <!-- Application Structure Plan: The application is structured as a top-down narrative to guide executive decision-making. It starts with a high-level "Executive Summary" to establish the core conflict (target met, but YoY decline). It then immediately presents the "Portfolio Health" section to reveal the central insight: over-reliance on a single brand. This is followed by an interactive, tabbed "Strategic Deep Dive" for users to explore the root causes (Therapy Area, Promotions, Channels). The experience concludes with a clear, non-interactive "Q4 Action Plan". This structure was chosen over a simple dashboard recreation because it transforms raw data into a compelling story, focusing on diagnosis, insight, and actionable solutions, which is more effective for strategic review. -->
+    <!-- Visualization & Content Choices: 
+        - Overall Sales: Goal: Compare. Viz: Bar Chart (Chart.js). Interaction: Tooltips. Justification: Clearly visualizes the gap between Target, Actual, and the declining Prior Year.
+        - Portfolio Health: Goal: Organize/Compare. Viz: Donut Chart (Chart.js) & Stat Cards. Interaction: Hover effects. Justification: Dramatically illustrates the portfolio's dependency on one brand ("LIVIDO vs. Rest").
+        - Therapy Variance: Goal: Compare. Viz: Horizontal Bar Chart (Chart.js). Interaction: Tab navigation. Justification: Immediately draws the eye to the largest negative variance (-$37.2M), highlighting the biggest financial drain.
+        - Promotion/Channel Health: Goal: Inform/Compare. Viz: Gauge-like bars and simple Bar Charts (HTML/CSS & Chart.js). Interaction: Tab navigation. Justification: Simple, clear visuals to show under-achievement (67% promotion) and channel failure (0% institutional).
+        - Action Plan: Goal: Inform. Viz: Structured HTML/CSS cards. Interaction: None. Justification: Presents the strategic conclusions in a clear, easy-to-read format. 
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            border-color: #3b82f6; /* blue-500 */
+            color: #3b82f6;
+            background-color: #eff6ff; /* blue-50 */
+        }
+        .kpi-card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb; /* gray-200 */
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Egypt IMS Performance Review</h1>
+            <p class="text-lg text-slate-600 mt-2">September 2025: Action Plan for Q4 Growth and Portfolio De-risking</p>
+        </header>
+
+        <!-- Section 1: Executive Summary -->
+        <section id="summary" class="mb-12">
+            <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Executive Summary: The Core Challenge</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-8">
+                This section provides the high-level business context. While we exceeded our current sales targets, a significant year-over-year decline signals underlying risks that require immediate attention.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
+                <div class="kpi-card">
+                    <h3 class="text-lg font-semibold text-slate-500">Total Sales (ACT 25)</h3>
+                    <p class="text-4xl font-bold text-blue-600 mt-2">$114.4M</p>
+                    <p class="text-sm text-green-600 font-medium mt-2">Above Target ($105.1M)</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="text-lg font-semibold text-slate-500">YoY Performance vs PY</h3>
+                    <p class="text-4xl font-bold text-red-600 mt-2">-$10.5M</p>
+                    <p class="text-sm text-red-600 font-medium mt-2">8.4% Decline vs Prior Year ($124.9M)</p>
+                </div>
+                <div class="kpi-card">
+                    <h3 class="text-lg font-semibold text-slate-500">Primary Performance Driver</h3>
+                    <p class="text-4xl font-bold text-slate-800 mt-2">LIVIDO</p>
+                    <p class="text-sm text-slate-500 font-medium mt-2">Represents ~50% of Total Sales</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <h3 class="text-xl font-bold text-center mb-4">Sales Performance: Target vs. Actuals vs. Prior Year</h3>
+                <div class="chart-container">
+                    <canvas id="salesSummaryChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Portfolio Health -->
+        <section id="portfolio" class="mb-12">
+            <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Portfolio Health: The Blockbuster & The Drain</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-8">
+                Our analysis reveals a critical dependency. The entire portfolio's performance is currently propped up by one blockbuster brand, while other key products are creating a significant financial drain.
+            </p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
+                <div class="lg:col-span-1 kpi-card">
+                    <h3 class="text-xl font-bold text-center mb-4">Sales Contribution</h3>
+                     <div class="chart-container h-64 md:h-72">
+                        <canvas id="portfolioContributionChart"></canvas>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                     <div class="kpi-card border-l-4 border-green-500">
+                        <h3 class="text-xl font-bold">Blockbuster Success: LIVIDO</h3>
+                        <p class="text-base text-slate-600 mt-2">This brand is the engine of our current success, significantly over-performing against its target.</p>
+                        <div class="mt-4">
+                            <p class="text-sm font-medium text-slate-500">ACT 25 Sales</p>
+                            <p class="text-3xl font-bold text-green-600">$79.5M</p>
+                             <p class="text-sm font-medium text-slate-500 mt-3">Achievement vs. TGT</p>
+                            <p class="text-2xl font-bold text-green-600">117%</p>
+                        </div>
+                    </div>
+                     <div class="kpi-card border-l-4 border-red-500">
+                        <h3 class="text-xl font-bold">Urgent Drain: TRAXONE</h3>
+                        <p class="text-base text-slate-600 mt-2">TRAXONE's performance is an urgent financial issue, showing a catastrophic decline and missing its target substantially.</p>
+                        <div class="mt-4">
+                            <p class="text-sm font-medium text-slate-500">YoY Growth (GRN)</p>
+                            <p class="text-3xl font-bold text-red-600">-2626.4%</p>
+                             <p class="text-sm font-medium text-slate-500 mt-3">Achievement vs. TGT</p>
+                            <p class="text-2xl font-bold text-red-600">17.2%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Strategic Deep Dive -->
+        <section id="deep-dive" class="mb-12">
+            <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Strategic Deep Dive: Root Cause Analysis</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-8">
+                Three core areas are driving our underperformance. Use the tabs below to explore the critical failures in our therapy area strategy, promotional execution, and channel management.
+            </p>
+            
+            <div class="mb-6 border-b border-gray-200 flex justify-center flex-wrap">
+                <button class="tab-button active py-3 px-6 font-semibold border-b-2 border-transparent" onclick="changeTab('therapy')">Therapy Area Failure</button>
+                <button class="tab-button py-3 px-6 font-semibold border-b-2 border-transparent" onclick="changeTab('promotion')">Promotional Inefficiency</button>
+                <button class="tab-button py-3 px-6 font-semibold border-b-2 border-transparent" onclick="changeTab('channel')">Channel Challenges</button>
+            </div>
+
+            <div id="therapy-content" class="tab-content kpi-card">
+                 <h3 class="text-xl font-bold text-center mb-1">Critical Financial Risk: AI Therapy Area</h3>
+                 <p class="text-center text-slate-500 mb-4">A single therapy area accounts for the majority of our financial gap against target.</p>
+                 <div class="chart-container">
+                    <canvas id="therapyVarianceChart"></canvas>
+                </div>
+            </div>
+
+            <div id="promotion-content" class="tab-content hidden kpi-card">
+                 <h3 class="text-xl font-bold text-center mb-1">Promotional Spend Inefficiency</h3>
+                 <p class="text-center text-slate-500 mb-6">Despite promoted brands driving 98% of promotional activity, both promoted and non-promoted portfolios are failing to meet targets, indicating poor ROI on spend.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                         <h4 class="font-bold text-center text-lg mb-2">Promoted Brands</h4>
+                         <div class="w-full bg-gray-200 rounded-full h-8">
+                            <div class="bg-red-500 h-8 text-white font-bold flex items-center justify-center rounded-full" style="width: 67%;">67% Achieved</div>
+                        </div>
+                        <p class="text-center text-sm mt-2 text-slate-600">Significantly under target.</p>
+                    </div>
+                    <div>
+                         <h4 class="font-bold text-center text-lg mb-2">Non-Promoted Brands</h4>
+                         <div class="w-full bg-gray-200 rounded-full h-8">
+                            <div class="bg-orange-500 h-8 text-white font-bold flex items-center justify-center rounded-full" style="width: 71%;">71% Achieved</div>
+                        </div>
+                        <p class="text-center text-sm mt-2 text-slate-600">Base business also lacks strength.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="channel-content" class="tab-content hidden kpi-card">
+                <h3 class="text-xl font-bold text-center mb-1">Institutional Channel (LPA/UPA) Failure</h3>
+                <p class="text-center text-slate-500 mb-4">The business is 100% reliant on the retail channel due to a complete failure to convert institutional or tender-based business this period.</p>
+                <div class="chart-container">
+                    <canvas id="channelChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 4: Action Plan -->
+        <section id="action-plan">
+            <h2 class="text-2xl font-bold text-slate-900 mb-2 text-center">Q4 Action Plan & Strategic Recommendations</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-8">
+                To address these challenges and de-risk the portfolio, we propose an immediate interventional focus on three strategic pillars.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="kpi-card hover:shadow-xl transition-shadow">
+                    <div class="flex items-center text-blue-600 mb-3">
+                        <span class="text-2xl mr-3">🎯</span>
+                        <h3 class="text-xl font-bold">AI Therapy Recovery</h3>
+                    </div>
+                    <p class="text-slate-600 mb-3">Launch a "Code Red" task force to diagnose and mitigate the -$37.2M gap.</p>
+                    <p><strong class="font-semibold">Owner:</strong> Head of Commercial</p>
+                    <p><strong class="font-semibold">Timeline:</strong> 15-day root cause analysis</p>
+                </div>
+                <div class="kpi-card hover:shadow-xl transition-shadow">
+                    <div class="flex items-center text-blue-600 mb-3">
+                         <span class="text-2xl mr-3">💰</span>
+                        <h3 class="text-xl font-bold">Promotion ROI Audit</h3>
+                    </div>
+                    <p class="text-slate-600 mb-3">Increase achievement from 67% to 80% by stopping ineffective spend and redeploying funds.</p>
+                    <p><strong class="font-semibold">Owner:</strong> Marketing & Sales Directors</p>
+                     <p><strong class="font-semibold">Timeline:</strong> Immediate for Q4</p>
+                </div>
+                <div class="kpi-card hover:shadow-xl transition-shadow">
+                     <div class="flex items-center text-blue-600 mb-3">
+                         <span class="text-2xl mr-3">🚀</span>
+                        <h3 class="text-xl font-bold">Harness Organic Growth</h3>
+                    </div>
+                    <p class="text-slate-600 mb-3">Reduce LIVIDO dependency by fast-tracking high-growth non-promoted brands for investment.</p>
+                    <p><strong class="font-semibold">Owner:</strong> Portfolio Strategy Lead</p>
+                    <p><strong class="font-semibold">Timeline:</strong> Q4 review for Q1 execution</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        const salesData = {
+            target25: 105.1,
+            actual25: 114.4,
+            actual24: 124.9
+        };
+
+        const portfolioData = {
+            livido: 79.5,
+            restOfPortfolio: 185.1 - 79.5 
+        };
+
+        const therapyVarianceData = [
+            { therapy: 'AI', variance: -37.2 },
+            { therapy: 'PAIN', variance: -19.1 },
+            { therapy: 'CVM', variance: -2.3 },
+            { therapy: 'OTHE', variance: -0.9 },
+            { therapy: 'GIT', variance: -0.6 }
+        ];
+
+        const channelData = {
+            retail: 86.4,
+            lpa_upa: 0 
+        };
+
+        function formatNumber(value) {
+            return '$' + value.toFixed(1) + 'M';
+        }
+
+        // Render Sales Summary Chart
+        const salesCtx = document.getElementById('salesSummaryChart').getContext('2d');
+        new Chart(salesCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Sales Performance'],
+                datasets: [
+                    {
+                        label: 'Target 25 IMS',
+                        data: [salesData.target25],
+                        backgroundColor: '#9ca3af', // gray-400
+                        borderColor: '#6b7280', // gray-500
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Actual 25 IMS',
+                        data: [salesData.actual25],
+                        backgroundColor: '#3b82f6', // blue-500
+                        borderColor: '#2563eb', // blue-600
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Actual 24 (PY)',
+                        data: [salesData.actual24],
+                        backgroundColor: '#ef4444', // red-500
+                        borderColor: '#dc2626', // red-600
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + formatNumber(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Sales (in Millions)' }
+                    }
+                }
+            }
+        });
+
+        // Render Portfolio Contribution Chart
+        const portfolioCtx = document.getElementById('portfolioContributionChart').getContext('2d');
+        new Chart(portfolioCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['LIVIDO Sales', 'Rest of Portfolio'],
+                datasets: [{
+                    label: 'Sales Contribution',
+                    data: [portfolioData.livido, portfolioData.restOfPortfolio],
+                    backgroundColor: ['#10b981', '#6b7280'], // emerald-500, gray-500
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                     legend: { position: 'bottom' },
+                     tooltip: {
+                        callbacks: {
+                             label: function(context) {
+                                return context.label + ': ' + formatNumber(context.raw);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Render Therapy Variance Chart
+        const therapyCtx = document.getElementById('therapyVarianceChart').getContext('2d');
+        new Chart(therapyCtx, {
+            type: 'bar',
+            data: {
+                labels: therapyVarianceData.map(d => d.therapy),
+                datasets: [{
+                    label: 'Variance vs. Target',
+                    data: therapyVarianceData.map(d => d.variance),
+                    backgroundColor: therapyVarianceData.map(d => d.variance < 0 ? '#ef4444' : '#22c55e'),
+                    borderColor: therapyVarianceData.map(d => d.variance < 0 ? '#dc2626' : '#16a34a'),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                 plugins: {
+                     legend: { display: false },
+                     tooltip: {
+                         callbacks: {
+                             label: function(context) {
+                                return 'Variance: ' + formatNumber(context.raw);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: true, text: 'Variance (in Millions)' }
+                    }
+                }
+            }
+        });
+
+        // Render Channel Chart
+        const channelCtx = document.getElementById('channelChart').getContext('2d');
+        new Chart(channelCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Retail Channel', 'Institutional (LPA/UPA)'],
+                datasets: [{
+                    label: 'Achievement % vs Target',
+                    data: [channelData.retail, channelData.lpa_upa],
+                    backgroundColor: ['#3b82f6', '#ef4444'],
+                    barPercentage: 0.5
+                }]
+            },
+            options: {
+                 responsive: true,
+                 maintainAspectRatio: false,
+                 plugins: {
+                     legend: { display: false },
+                     tooltip: {
+                         callbacks: {
+                             label: function(context) {
+                                return 'Achievement: ' + context.raw.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: { display: true, text: 'Achievement %' }
+                    }
+                }
+            }
+        });
+
+
+        // Tab functionality
+        function changeTab(tabName) {
+            const contents = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-button');
+            
+            contents.forEach(content => {
+                if (content.id === tabName + '-content') {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+
+            buttons.forEach(button => {
+                if (button.getAttribute('onclick').includes(`'${tabName}'`)) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
